@@ -14,9 +14,9 @@
     <version>0.0.1</version>
     <packaging>jar</packaging>
 
-    <name>SCX Function</name>
+    <name>SCX HTTP Routing X</name>
     <description>
-        SCX Function
+        SCX HTTP Routing X
     </description>
     <url>https://github.com/scx-projects/scx-http-routing-x</url>
 
