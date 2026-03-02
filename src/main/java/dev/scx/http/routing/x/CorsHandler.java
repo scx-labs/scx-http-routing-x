@@ -1,10 +1,19 @@
 package dev.scx.http.routing.x;
 
+import dev.scx.function.Function1Void;
+import dev.scx.http.ScxHttpServerResponse;
+import dev.scx.http.exception.ForbiddenException;
+import dev.scx.http.headers.ScxHttpHeaderName;
+import dev.scx.http.method.HttpMethod;
+import dev.scx.http.method.ScxHttpMethod;
+import dev.scx.http.routing.RoutingContext;
+
 import java.util.Arrays;
 import java.util.LinkedHashSet;
 import java.util.Objects;
 import java.util.Set;
 
+import static dev.scx.http.headers.HttpHeaderName.*;
 import static java.util.Collections.addAll;
 
 /// CorsHandler
@@ -87,7 +96,7 @@ public class CorsHandler implements Function1Void<RoutingContext, Throwable> {
     @Override
     public void apply(RoutingContext context) throws Throwable {
         var request = context.request();
-        var response = context.response();
+        var response = request.response();
         var origin = context.request().getHeader(ORIGIN);
         if (origin == null) {
             // 不是 CORS 请求 - 什么都不做 直接 next
@@ -112,7 +121,7 @@ public class CorsHandler implements Function1Void<RoutingContext, Throwable> {
                     response.setHeader(ACCESS_CONTROL_MAX_AGE, maxAgeSeconds);
                 }
 
-                response.status(204).send();
+                response.statusCode(204).send();
 
             } else {
                 addCredentialsAndOriginHeader(response, origin);
