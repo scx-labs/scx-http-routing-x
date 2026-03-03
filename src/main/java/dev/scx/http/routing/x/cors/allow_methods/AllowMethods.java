@@ -11,10 +11,6 @@ public sealed interface AllowMethods permits ListAllowMethods, ReflcetAllowMetho
         return new ListAllowMethods(methods);
     }
 
-    static ListAllowMethods of(String... methods) {
-        return new ListAllowMethods(methods);
-    }
-
     static ReflcetAllowMethods ofReflect() {
         return REFLCET_ALLOW_METHODS;
     }

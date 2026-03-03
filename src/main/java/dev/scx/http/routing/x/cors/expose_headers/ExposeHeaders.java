@@ -11,10 +11,6 @@ public sealed interface ExposeHeaders permits ListExposeHeaders, WildcardExposeH
         return new ListExposeHeaders(headerNames);
     }
 
-    static ListExposeHeaders of(String... headerNames) {
-        return new ListExposeHeaders(headerNames);
-    }
-
     static WildcardExposeHeaders ofWildcard() {
         return WILDCARD_EXPOSE_HEADERS;
     }

@@ -11,10 +11,6 @@ public sealed interface AllowHeaders permits ListAllowHeaders, ReflectAllowHeade
         return new ListAllowHeaders(headerNames);
     }
 
-    static ListAllowHeaders of(String... headerNames) {
-        return new ListAllowHeaders(headerNames);
-    }
-
     static ReflectAllowHeaders ofReflect() {
         return REFLECT_ALLOW_HEADERS;
     }
