@@ -2,9 +2,7 @@ package dev.scx.http.routing.x.cors.expose_headers;
 
 import dev.scx.http.headers.ScxHttpHeaderName;
 
-import java.util.Arrays;
 import java.util.LinkedHashSet;
-import java.util.stream.Collectors;
 
 public final class ListExposeHeaders implements ExposeHeaders {
 
