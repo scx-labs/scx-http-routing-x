@@ -25,6 +25,6 @@ public sealed interface AllowMethods permits ListAllowMethods, ReflcetAllowMetho
 
     /// 输入可为 null, 表示没有 "Access-Control-Request-Method" 头
     /// 返回值可为 null, 表示没有 "Access-Control-Allow-Methods" 头
-     String allowedMethodsString(String requestMethodString);
+    String allowedMethodsString(String requestMethodString);
 
 }
