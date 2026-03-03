@@ -1,13 +1,15 @@
 package dev.scx.http.routing.x.cors;
 
-import dev.scx.http.ScxHttpServerResponse;
 import dev.scx.http.method.HttpMethod;
 import dev.scx.http.routing.RoutingContext;
 import dev.scx.http.routing.x.cors.allow_headers.AllowHeaders;
+import dev.scx.http.routing.x.cors.allow_headers.WildcardAllowHeaders;
 import dev.scx.http.routing.x.cors.allow_methods.AllowMethods;
+import dev.scx.http.routing.x.cors.allow_methods.WildcardAllowMethods;
 import dev.scx.http.routing.x.cors.allow_origin.AllowOrigin;
 import dev.scx.http.routing.x.cors.allow_origin.WildcardAllowOrigin;
 import dev.scx.http.routing.x.cors.expose_headers.ExposeHeaders;
+import dev.scx.http.routing.x.cors.expose_headers.WildcardExposeHeaders;
 
 import static dev.scx.http.headers.HttpHeaderName.*;
 
@@ -43,24 +45,40 @@ public class CorsHandlerImpl implements CorsHandler {
 
     @Override
     public CorsHandler allowMethods(AllowMethods allowMethods) {
+        if (allowCredentials) {
+            if (allowMethods instanceof WildcardAllowMethods) {
+                throw new IllegalArgumentException("can not use 'WildcardAllowMethods' with 'allowCredentials=true'.");
+            }
+        }
         this.allowMethods = allowMethods;
         return this;
     }
 
     @Override
     public CorsHandler allowHeaders(AllowHeaders allowHeaders) {
+        if (allowCredentials) {
+            if (allowHeaders instanceof WildcardAllowHeaders) {
+                throw new IllegalArgumentException("can not use 'WildcardAllowHeaders' with 'allowCredentials=true'.");
+            }
+        }
         this.allowHeaders = allowHeaders;
         return this;
     }
 
     @Override
     public CorsHandler exposeHeaders(ExposeHeaders exposeHeaders) {
+        if (allowCredentials) {
+            if (exposeHeaders instanceof WildcardExposeHeaders) {
+                throw new IllegalArgumentException("can not use 'WildcardExposeHeaders' with 'allowCredentials=true'.");
+            }
+        }
         this.exposeHeaders = exposeHeaders;
         return this;
     }
 
     @Override
     public CorsHandlerImpl allowCredentials(boolean allowCredentials) {
+        // todo 这里需要反向检查.
         this.allowCredentials = allowCredentials;
         return this;
     }
