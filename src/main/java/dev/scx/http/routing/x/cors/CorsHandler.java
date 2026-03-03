@@ -1,24 +1,21 @@
 package dev.scx.http.routing.x.cors;
 
 import dev.scx.function.Function1Void;
-import dev.scx.http.headers.ScxHttpHeaderName;
-import dev.scx.http.method.ScxHttpMethod;
 import dev.scx.http.routing.RoutingContext;
 import dev.scx.http.routing.x.cors.allow_headers.AllowHeaders;
 import dev.scx.http.routing.x.cors.allow_methods.AllowMethods;
-
-// todo 支持 anyxxx
-// Origins 有 any
+import dev.scx.http.routing.x.cors.allow_origin.AllowOrigin;
+import dev.scx.http.routing.x.cors.expose_headers.ExposeHeaders;
 
 public interface CorsHandler extends Function1Void<RoutingContext, Throwable> {
 
-    CorsHandler allowedMethods(AllowMethods allowMethods);
+    CorsHandler allowMethods(AllowMethods allowMethods);
 
-    CorsHandler allowedOrigins(String... origins);
+    CorsHandler allowOrigin(AllowOrigin allowOrigin);
 
-    CorsHandler allowedHeaders(AllowHeaders allowHeaders);
+    CorsHandler allowHeaders(AllowHeaders allowHeaders);
 
-    CorsHandler exposedHeaders(ScxHttpHeaderName... headerNames);
+    CorsHandler exposeHeaders(ExposeHeaders exposeHeaders);
 
     CorsHandler allowCredentials(boolean allow);
 
