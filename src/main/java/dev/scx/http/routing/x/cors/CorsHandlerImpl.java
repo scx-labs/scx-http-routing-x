@@ -1,26 +1,17 @@
 package dev.scx.http.routing.x.cors;
 
 import dev.scx.http.ScxHttpServerResponse;
-import dev.scx.http.exception.ForbiddenException;
-import dev.scx.http.headers.ScxHttpHeaderName;
 import dev.scx.http.method.HttpMethod;
-import dev.scx.http.method.ScxHttpMethod;
 import dev.scx.http.routing.RoutingContext;
 import dev.scx.http.routing.x.cors.allow_headers.AllowHeaders;
-import dev.scx.http.routing.x.cors.allow_headers.WildcardAllowHeaders;
 import dev.scx.http.routing.x.cors.allow_methods.AllowMethods;
-import dev.scx.http.routing.x.cors.allow_methods.WildcardAllowMethods;
 import dev.scx.http.routing.x.cors.allow_origin.AllowOrigin;
 import dev.scx.http.routing.x.cors.allow_origin.WildcardAllowOrigin;
 import dev.scx.http.routing.x.cors.expose_headers.ExposeHeaders;
-import dev.scx.http.routing.x.cors.expose_headers.WildcardExposeHeaders;
-
-import java.util.Arrays;
-import java.util.LinkedHashSet;
-import java.util.Objects;
 
 import static dev.scx.http.headers.HttpHeaderName.*;
-import static java.util.Collections.addAll;
+
+// todo 配置阶段需要保证不能出现非法组合.
 
 /// CorsHandler
 ///
@@ -33,7 +24,7 @@ public class CorsHandlerImpl implements CorsHandler {
     private AllowHeaders allowHeaders;
     private ExposeHeaders exposeHeaders;
     private boolean allowCredentials;
-    private long maxAgeSeconds;
+    private Long maxAgeSeconds;
 
     public CorsHandlerImpl() {
         this.allowOrigin = new WildcardAllowOrigin();
@@ -41,7 +32,7 @@ public class CorsHandlerImpl implements CorsHandler {
         this.allowHeaders = AllowHeaders.ofWildcard();
         this.exposeHeaders = ExposeHeaders.ofWildcard();
         this.allowCredentials = false;
-        this.maxAgeSeconds = 9999;
+        this.maxAgeSeconds = 9999L;
     }
 
     @Override
@@ -75,7 +66,7 @@ public class CorsHandlerImpl implements CorsHandler {
     }
 
     @Override
-    public CorsHandlerImpl maxAgeSeconds(long maxAgeSeconds) {
+    public CorsHandlerImpl maxAgeSeconds(Long maxAgeSeconds) {
         this.maxAgeSeconds = maxAgeSeconds;
         return this;
     }
@@ -94,74 +85,58 @@ public class CorsHandlerImpl implements CorsHandler {
             return;
         }
 
-        // todo
-        if (isValidOrigin(origin)) {
-            var accessControlRequestMethod = request.getHeader(ACCESS_CONTROL_REQUEST_METHOD);
-            if (request.method() == HttpMethod.OPTIONS && accessControlRequestMethod != null) {
-                // 预检 请求
-                addCredentialsAndOriginHeader(response, origin);
-                if (allowedMethodsString != null) {
-                    response.setHeader(ACCESS_CONTROL_ALLOW_METHODS, allowedMethodsString);
-                }
-                if (allowedHeadersString != null) {
-                    response.setHeader(ACCESS_CONTROL_ALLOW_HEADERS, allowedHeadersString);
-                } else {
-                    if (request.headers().contains(ACCESS_CONTROL_REQUEST_HEADERS)) {
-                        // 回显请求标头
-                        response.setHeader(ACCESS_CONTROL_ALLOW_HEADERS, request.getHeader(ACCESS_CONTROL_REQUEST_HEADERS));
-                    }
-                }
-                if (maxAgeSeconds != null) {
-                    response.setHeader(ACCESS_CONTROL_MAX_AGE, maxAgeSeconds);
-                }
+        // 2, 验证 origin
+        var xxx = this.allowOrigin.xxxOrigin(origin);
 
-                response.statusCode(204).send();
-
-            } else {
-                addCredentialsAndOriginHeader(response, origin);
-                if (exposedHeadersString != null) {
-                    response.setHeader(ACCESS_CONTROL_EXPOSE_HEADERS, exposedHeadersString);
-                }
-                context.next();
-            }
-        } else {
-            //向客户端报告 CORS 错误
-            throw new ForbiddenException("CORS Rejected - Invalid origin");
+        // 验证失败
+        if (xxx == null) {
+            context.next();
+            return;
         }
-    }
 
-    private void addCredentialsAndOriginHeader(ScxHttpServerResponse response, String origin) {
+        // 3, 验证成功
+        // 3.1, 写入 Allow-Origin
+        response.setHeader(ACCESS_CONTROL_ALLOW_ORIGIN, xxx);
+        response.setHeader(VARY, "Origin");
+
+        // 3.2, 写入 Allow-Credentials
         if (allowCredentials) {
             response.setHeader(ACCESS_CONTROL_ALLOW_CREDENTIALS, "true");
-            // Must be exact origin (not '*') in case of credentials
-            response.setHeader(ACCESS_CONTROL_ALLOW_ORIGIN, origin);
-        } else {
-            // Can be '*' too
-            response.setHeader(ACCESS_CONTROL_ALLOW_ORIGIN, getAllowedOrigin(origin));
-        }
-    }
-
-    private boolean isValidOrigin(String origin) {
-        // "*" 的意思是全部 origin
-        if (starOrigin()) {
-            return true;
         }
 
-        // 否则我们进行完全匹配
-        for (var allowedOrigin : origins) {
-            if (allowedOrigin.equals(origin)) {
-                return true;
+        // 4, 判断是否是预检请求
+        var requestMethod = request.getHeader(ACCESS_CONTROL_REQUEST_METHOD);
+
+        // 4.1, 是预检请求
+        if (request.method() == HttpMethod.OPTIONS && requestMethod != null) {
+
+            var allowedMethodsString = this.allowMethods.allowedMethodsString(requestMethod);
+            if (allowedMethodsString != null) {
+                response.setHeader(ACCESS_CONTROL_ALLOW_METHODS, allowedMethodsString);
             }
+
+            var requestHeaders = request.getHeader(ACCESS_CONTROL_REQUEST_HEADERS);
+            var allowedHeadersString = this.allowHeaders.allowedHeadersString(requestHeaders);
+            if (allowedHeadersString != null) {
+                response.setHeader(ACCESS_CONTROL_ALLOW_HEADERS, allowedHeadersString);
+            }
+
+            if (this.maxAgeSeconds != null) {
+                response.setHeader(ACCESS_CONTROL_MAX_AGE, String.valueOf(maxAgeSeconds));
+            }
+
+            response.statusCode(204).send();
+
+        } else {
+            // 不是预检请求
+            var exposedHeadersString = this.exposeHeaders.exposedHeadersString();
+            if (exposedHeadersString != null) {
+                response.setHeader(ACCESS_CONTROL_EXPOSE_HEADERS, exposedHeadersString);
+            }
+
+            context.next();
         }
 
-        return false;
-    }
-
-    private String getAllowedOrigin(String origin) {
-        if (starOrigin()) {
-            return "*";
-        }
-        return origin;
     }
 
 }

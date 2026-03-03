@@ -19,6 +19,6 @@ public interface CorsHandler extends Function1Void<RoutingContext, Throwable> {
 
     CorsHandler allowCredentials(boolean allowCredentials);
 
-    CorsHandler maxAgeSeconds(long maxAgeSeconds);
+    CorsHandler maxAgeSeconds(Long maxAgeSeconds);
 
 }
