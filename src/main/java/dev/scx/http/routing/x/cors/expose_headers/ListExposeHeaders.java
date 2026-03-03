@@ -5,7 +5,7 @@ import dev.scx.http.headers.ScxHttpHeaderName;
 import java.util.Arrays;
 import java.util.stream.Collectors;
 
-public final class ListExposeHeaders implements ExposeHeaders{
+public final class ListExposeHeaders implements ExposeHeaders {
 
     private final String exposedHeadersString;
 
