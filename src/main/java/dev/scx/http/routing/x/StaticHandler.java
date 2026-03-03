@@ -79,16 +79,42 @@ public class StaticHandler implements Function1Void<RoutingContext, Throwable> {
         if (regularFile) {
             return root;
         }
-        var path = root.resolve(p).normalize();
-        // 1, 重要!!! , 防止访问到上级文件的情况
-        if (!path.startsWith(root)) {
+
+        // 目录模式：把 wildcard 捕获映射为相对路径
+        String rel = toRelativeStaticPath(p);
+
+        // 建议把 root 先变成 absolute+normalized，避免 startsWith 在相对路径上语义怪异
+        Path rootAbs = root.toAbsolutePath().normalize();
+        Path resolved = rootAbs.resolve(rel).normalize();
+
+        // 防穿越：必须仍在 root 内
+        if (!resolved.startsWith(rootAbs)) {
             throw new NotFoundException();
         }
-        if (Files.isDirectory(path)) {
-            return path.resolve("index.html");
-        } else {
-            return path;
+
+        return resolved;
+    }
+
+    /**
+     * 将 TemplatePathMatcher 的 "*" 捕获值（可能为 "", "/", "/a/b", "/a/b/"）
+     * 转换为用于文件系统 resolve 的相对路径（永不以 "/" 开头）。
+     */
+    private static String toRelativeStaticPath(String p) {
+        if (p == null || p.isEmpty() || "/".equals(p)) {
+            return "index.html";
         }
+
+        // p 形如 "/a/b" 或 "/a/b/"
+        if (p.charAt(0) == '/') {
+            p = p.substring(1); // 关键：去掉 leading slash，避免 resolve 变成绝对路径
+        }
+
+        // 目录请求：".../" -> ".../index.html"
+        if (p.isEmpty() || p.endsWith("/")) {
+            return p + "index.html";
+        }
+
+        return p;
     }
 
 }

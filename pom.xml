@@ -95,7 +95,7 @@
     <properties>
 
         <!-- *********************** 以下为依赖包版本 *********************** -->
-        <scx-http-routing.version>0.0.2</scx-http-routing.version>
+        <scx-http-routing.version>0.1.0</scx-http-routing.version>
         <!-- todo 测试完成后移除 -->
         <scx-http-x.version>0.3.1</scx-http-x.version>
         <testng.version>7.11.0</testng.version>

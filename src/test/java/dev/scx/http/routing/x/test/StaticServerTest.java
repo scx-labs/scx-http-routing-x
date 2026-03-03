@@ -1,12 +1,12 @@
 package dev.scx.http.routing.x.test;
 
-import dev.scx.http.routing.Route;
 import dev.scx.http.routing.Router;
-import dev.scx.http.routing.method_matcher.MethodMatcher;
-import dev.scx.http.routing.path_matcher.PathMatcher;
+import dev.scx.http.routing.x.cors.CorsHandlerImpl;
+import dev.scx.http.routing.x.StaticHandler;
 import dev.scx.http.x.HttpServer;
 
 import java.io.IOException;
+import java.nio.file.Path;
 
 public class StaticServerTest {
 
@@ -17,13 +17,12 @@ public class StaticServerTest {
     public static void test1() throws IOException {
         Router router = Router.of();
 
-        router.addRoute(-10000, Route.of(
-            PathMatcher.any(),
-            MethodMatcher.any(),
-            ctx -> {
-                ctx.request().response().send("123");
-            }
-        ));
+        // 尽可能靠前
+        router.route(-10000, new CorsHandlerImpl());
+
+        router.route("/*",
+            new StaticHandler(Path.of("C:\\Users\\scx\\Projects\\page3"))
+        );
 
         var httpServer = new HttpServer();
         httpServer.onRequest(router);
