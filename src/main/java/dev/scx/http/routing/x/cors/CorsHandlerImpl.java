@@ -128,15 +128,15 @@ public class CorsHandlerImpl implements CorsHandler {
         // 4.1, 是预检请求
         if (request.method() == HttpMethod.OPTIONS && requestMethod != null) {
 
-            var allowedMethodsString = this.allowMethods.allowedMethods(requestMethod);
-            if (allowedMethodsString != null) {
-                response.setHeader(ACCESS_CONTROL_ALLOW_METHODS, allowedMethodsString);
+            var allowedMethods = this.allowMethods.allowedMethods(requestMethod);
+            if (allowedMethods != null) {
+                response.setHeader(ACCESS_CONTROL_ALLOW_METHODS, allowedMethods);
             }
 
             var requestHeaders = request.getHeader(ACCESS_CONTROL_REQUEST_HEADERS);
-            var allowedHeadersString = this.allowHeaders.allowedHeaders(requestHeaders);
-            if (allowedHeadersString != null) {
-                response.setHeader(ACCESS_CONTROL_ALLOW_HEADERS, allowedHeadersString);
+            var allowedHeaders = this.allowHeaders.allowedHeaders(requestHeaders);
+            if (allowedHeaders != null) {
+                response.setHeader(ACCESS_CONTROL_ALLOW_HEADERS, allowedHeaders);
             }
 
             if (this.maxAgeSeconds != null) {
@@ -147,9 +147,9 @@ public class CorsHandlerImpl implements CorsHandler {
 
         } else {
             // 不是预检请求
-            var exposedHeadersString = this.exposeHeaders.exposedHeadersString();
-            if (exposedHeadersString != null) {
-                response.setHeader(ACCESS_CONTROL_EXPOSE_HEADERS, exposedHeadersString);
+            var exposedHeaders = this.exposeHeaders.exposedHeaders();
+            if (exposedHeaders != null) {
+                response.setHeader(ACCESS_CONTROL_EXPOSE_HEADERS, exposedHeaders);
             }
 
             context.next();

@@ -20,7 +20,7 @@ public final class ListExposeHeaders implements ExposeHeaders {
     }
 
     @Override
-    public String exposedHeadersString() {
+    public String exposedHeaders() {
         return this.exposedHeadersString;
     }
 

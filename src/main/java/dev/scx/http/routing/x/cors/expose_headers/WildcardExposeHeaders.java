@@ -10,7 +10,7 @@ public final class WildcardExposeHeaders implements ExposeHeaders {
     }
 
     @Override
-    public String exposedHeadersString() {
+    public String exposedHeaders() {
         return "*";
     }
 
