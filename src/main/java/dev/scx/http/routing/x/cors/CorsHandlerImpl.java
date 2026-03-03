@@ -29,7 +29,8 @@ public class CorsHandlerImpl implements CorsHandler {
     private Long maxAgeSeconds;
 
     public CorsHandlerImpl() {
-        this.allowOrigin = new WildcardAllowOrigin();
+        // todo 这里现在的组合应该不合法.
+        this.allowOrigin = AllowOrigin.ofWildcard();
         this.allowMethods = AllowMethods.ofWildcard();
         this.allowHeaders = AllowHeaders.ofWildcard();
         this.exposeHeaders = ExposeHeaders.ofWildcard();
