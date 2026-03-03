@@ -19,8 +19,6 @@ public sealed interface AllowMethods permits ListAllowMethods, ReflcetAllowMetho
         return WILDCARD_ALLOW_METHODS;
     }
 
-    /// 输入可为 null, 表示没有 "Access-Control-Request-Method" 头
-    /// 返回值可为 null, 表示没有 "Access-Control-Allow-Methods" 头
     String allowedMethods(String requestMethodString);
 
 }

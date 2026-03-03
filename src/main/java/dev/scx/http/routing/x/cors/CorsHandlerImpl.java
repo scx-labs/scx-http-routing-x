@@ -151,12 +151,18 @@ public final class CorsHandlerImpl implements CorsHandler {
         // 4.1, 是预检请求
         if (request.method() == HttpMethod.OPTIONS && requestMethod != null) {
 
+            // 这里 allowedMethods 永不为 null
+            // 因为 ListAllowMethods 和 WildcardAllowMethods 都不会返回 null
+            // 而 ReflcetAllowMethods 只有在 requestMethod == null 时才会返回 null
+            // 但是我们的分支判断已经杜绝了这种可能性.
             var allowedMethods = this.allowMethods.allowedMethods(requestMethod);
-            if (allowedMethods != null) {
-                response.setHeader(ACCESS_CONTROL_ALLOW_METHODS, allowedMethods);
-            }
+            response.setHeader(ACCESS_CONTROL_ALLOW_METHODS, allowedMethods);
 
             var requestHeaders = request.getHeader(ACCESS_CONTROL_REQUEST_HEADERS);
+
+            // 这里 和上边的 allowMethods 判断类似,
+            // 只有 ReflectAllowHeaders 并且 requestHeaders == null 才会返回 null
+            // 而这 在协议中是允许的 表示 不设置 "Access-Control-Allow-Headers" 头.
             var allowedHeaders = this.allowHeaders.allowedHeaders(requestHeaders);
             if (allowedHeaders != null) {
                 response.setHeader(ACCESS_CONTROL_ALLOW_HEADERS, allowedHeaders);
@@ -168,8 +174,8 @@ public final class CorsHandlerImpl implements CorsHandler {
 
             response.statusCode(204).send();
 
-        } else {
-            // 不是预检请求
+        } else { // 不是预检请求
+
             var exposedHeaders = this.exposeHeaders.exposedHeaders();
             if (exposedHeaders != null) {
                 response.setHeader(ACCESS_CONTROL_EXPOSE_HEADERS, exposedHeaders);
