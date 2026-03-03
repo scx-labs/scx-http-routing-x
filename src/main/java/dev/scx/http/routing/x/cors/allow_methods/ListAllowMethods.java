@@ -20,13 +20,13 @@ public final class ListAllowMethods implements AllowMethods {
 
         for (var m : methods) {
             if (m == null) {
-                throw new NullPointerException("methods must not be null");
+                throw new NullPointerException("method must not be null");
             }
 
             String trimmed = m.value().trim();
 
             if (trimmed.isEmpty()) {
-                throw new IllegalArgumentException("methods must not be blank");
+                throw new IllegalArgumentException("method must not be blank");
             }
 
             if ("*".equals(trimmed)) {
@@ -36,7 +36,7 @@ public final class ListAllowMethods implements AllowMethods {
 
             if (trimmed.contains(",")) {
                 throw new IllegalArgumentException(
-                    "methods must not contain ',' : " + trimmed);
+                    "method must not contain ',' : " + trimmed);
             }
 
             set.add(trimmed);
