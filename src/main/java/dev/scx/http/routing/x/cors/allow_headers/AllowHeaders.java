@@ -25,6 +25,6 @@ public sealed interface AllowHeaders permits ListAllowHeaders, ReflectAllowHeade
 
     /// 输入可为 null, 表示没有 "Access-Control-Request-Headers" 头
     /// 返回值可为 null, 表示没有 "Access-Control-Allow-Headers" 头
-    String allowedHeadersString(String requestHeadersString);
+    String allowedHeaders(String requestHeadersString);
 
 }

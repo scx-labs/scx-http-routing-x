@@ -12,7 +12,6 @@ public sealed interface AllowOrigin permits ListAllowOrigin, WildcardAllowOrigin
         return WILDCARD_ALLOW_ORIGIN;
     }
 
-    // todo 名字没想好
-    String xxxOrigin(String origin);
+    String allowedOrigin(String origin);
 
 }

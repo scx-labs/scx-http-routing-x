@@ -10,7 +10,7 @@ public final class WildcardAllowMethods implements AllowMethods {
     }
 
     @Override
-    public String allowedMethodsString(String requestMethodString) {
+    public String allowedMethods(String requestMethodString) {
         return "*";
     }
 

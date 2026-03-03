@@ -10,7 +10,7 @@ public final class WildcardAllowOrigin implements AllowOrigin {
     }
 
     @Override
-    public String xxxOrigin(String origin) {
+    public String allowedOrigin(String origin) {
         return "*";
     }
 

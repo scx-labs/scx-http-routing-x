@@ -20,7 +20,7 @@ public final class ListAllowHeaders implements AllowHeaders {
     }
 
     @Override
-    public String allowedHeadersString(String requestHeadersString) {
+    public String allowedHeaders(String requestHeadersString) {
         return this.allowedHeadersString;
     }
 

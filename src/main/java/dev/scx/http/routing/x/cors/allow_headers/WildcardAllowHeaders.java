@@ -10,7 +10,7 @@ public final class WildcardAllowHeaders implements AllowHeaders {
     }
 
     @Override
-    public String allowedHeadersString(String requestHeadersString) {
+    public String allowedHeaders(String requestHeadersString) {
         return "*";
     }
 

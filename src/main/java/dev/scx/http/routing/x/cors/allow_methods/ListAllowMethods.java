@@ -20,7 +20,7 @@ public final class ListAllowMethods implements AllowMethods {
     }
 
     @Override
-    public String allowedMethodsString(String requestMethodString) {
+    public String allowedMethods(String requestMethodString) {
         return allowedMethodsString;
     }
 

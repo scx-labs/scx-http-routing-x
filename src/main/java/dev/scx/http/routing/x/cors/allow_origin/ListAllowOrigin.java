@@ -12,7 +12,7 @@ public final class ListAllowOrigin implements AllowOrigin {
     }
 
     @Override
-    public String xxxOrigin(String origin) {
+    public String allowedOrigin(String origin) {
         for (var o : this.origins) {
             if (o.equals(origin)) {
                 return o;

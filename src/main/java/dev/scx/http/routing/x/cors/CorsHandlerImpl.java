@@ -7,7 +7,6 @@ import dev.scx.http.routing.x.cors.allow_headers.WildcardAllowHeaders;
 import dev.scx.http.routing.x.cors.allow_methods.AllowMethods;
 import dev.scx.http.routing.x.cors.allow_methods.WildcardAllowMethods;
 import dev.scx.http.routing.x.cors.allow_origin.AllowOrigin;
-import dev.scx.http.routing.x.cors.allow_origin.WildcardAllowOrigin;
 import dev.scx.http.routing.x.cors.expose_headers.ExposeHeaders;
 import dev.scx.http.routing.x.cors.expose_headers.WildcardExposeHeaders;
 
@@ -105,17 +104,17 @@ public class CorsHandlerImpl implements CorsHandler {
         }
 
         // 2, 验证 origin
-        var xxx = this.allowOrigin.xxxOrigin(origin);
+        var allowedOrigin = this.allowOrigin.allowedOrigin(origin);
 
         // 验证失败
-        if (xxx == null) {
+        if (allowedOrigin == null) {
             context.next();
             return;
         }
 
         // 3, 验证成功
         // 3.1, 写入 Allow-Origin
-        response.setHeader(ACCESS_CONTROL_ALLOW_ORIGIN, xxx);
+        response.setHeader(ACCESS_CONTROL_ALLOW_ORIGIN, allowedOrigin);
         response.setHeader(VARY, "Origin");
 
         // 3.2, 写入 Allow-Credentials
@@ -129,13 +128,13 @@ public class CorsHandlerImpl implements CorsHandler {
         // 4.1, 是预检请求
         if (request.method() == HttpMethod.OPTIONS && requestMethod != null) {
 
-            var allowedMethodsString = this.allowMethods.allowedMethodsString(requestMethod);
+            var allowedMethodsString = this.allowMethods.allowedMethods(requestMethod);
             if (allowedMethodsString != null) {
                 response.setHeader(ACCESS_CONTROL_ALLOW_METHODS, allowedMethodsString);
             }
 
             var requestHeaders = request.getHeader(ACCESS_CONTROL_REQUEST_HEADERS);
-            var allowedHeadersString = this.allowHeaders.allowedHeadersString(requestHeaders);
+            var allowedHeadersString = this.allowHeaders.allowedHeaders(requestHeaders);
             if (allowedHeadersString != null) {
                 response.setHeader(ACCESS_CONTROL_ALLOW_HEADERS, allowedHeadersString);
             }
