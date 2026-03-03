@@ -7,6 +7,7 @@ import dev.scx.http.routing.x.cors.allow_headers.WildcardAllowHeaders;
 import dev.scx.http.routing.x.cors.allow_methods.AllowMethods;
 import dev.scx.http.routing.x.cors.allow_methods.WildcardAllowMethods;
 import dev.scx.http.routing.x.cors.allow_origin.AllowOrigin;
+import dev.scx.http.routing.x.cors.allow_origin.WildcardAllowOrigin;
 import dev.scx.http.routing.x.cors.expose_headers.ExposeHeaders;
 import dev.scx.http.routing.x.cors.expose_headers.WildcardExposeHeaders;
 
@@ -37,48 +38,58 @@ public class CorsHandlerImpl implements CorsHandler {
         this.maxAgeSeconds = 9999L;
     }
 
+    /// 验证组合是否合法
+    private static void validateConfiguration(boolean allowCredentials, AllowOrigin allowOrigin, AllowMethods allowMethods, AllowHeaders allowHeaders, ExposeHeaders exposeHeaders) {
+        if (!allowCredentials) {
+            return;
+        }
+
+        // allowCredentials=true 时，禁止任何 wildcard 组合
+        if (allowOrigin instanceof WildcardAllowOrigin) {
+            throw new IllegalArgumentException("can not use 'WildcardAllowOrigin' with 'allowCredentials=true'.");
+        }
+        if (allowMethods instanceof WildcardAllowMethods) {
+            throw new IllegalArgumentException("can not use 'WildcardAllowMethods' with 'allowCredentials=true'.");
+        }
+        if (allowHeaders instanceof WildcardAllowHeaders) {
+            throw new IllegalArgumentException("can not use 'WildcardAllowHeaders' with 'allowCredentials=true'.");
+        }
+        if (exposeHeaders instanceof WildcardExposeHeaders) {
+            throw new IllegalArgumentException("can not use 'WildcardExposeHeaders' with 'allowCredentials=true'.");
+        }
+    }
+
     @Override
     public CorsHandler allowOrigin(AllowOrigin allowOrigin) {
+        validateConfiguration(allowCredentials, allowOrigin, allowMethods, allowHeaders, exposeHeaders);
         this.allowOrigin = allowOrigin;
         return this;
     }
 
     @Override
     public CorsHandler allowMethods(AllowMethods allowMethods) {
-        if (allowCredentials) {
-            if (allowMethods instanceof WildcardAllowMethods) {
-                throw new IllegalArgumentException("can not use 'WildcardAllowMethods' with 'allowCredentials=true'.");
-            }
-        }
+        validateConfiguration(allowCredentials, allowOrigin, allowMethods, allowHeaders, exposeHeaders);
         this.allowMethods = allowMethods;
         return this;
     }
 
     @Override
     public CorsHandler allowHeaders(AllowHeaders allowHeaders) {
-        if (allowCredentials) {
-            if (allowHeaders instanceof WildcardAllowHeaders) {
-                throw new IllegalArgumentException("can not use 'WildcardAllowHeaders' with 'allowCredentials=true'.");
-            }
-        }
+        validateConfiguration(allowCredentials, allowOrigin, allowMethods, allowHeaders, exposeHeaders);
         this.allowHeaders = allowHeaders;
         return this;
     }
 
     @Override
     public CorsHandler exposeHeaders(ExposeHeaders exposeHeaders) {
-        if (allowCredentials) {
-            if (exposeHeaders instanceof WildcardExposeHeaders) {
-                throw new IllegalArgumentException("can not use 'WildcardExposeHeaders' with 'allowCredentials=true'.");
-            }
-        }
+        validateConfiguration(allowCredentials, allowOrigin, allowMethods, allowHeaders, exposeHeaders);
         this.exposeHeaders = exposeHeaders;
         return this;
     }
 
     @Override
     public CorsHandlerImpl allowCredentials(boolean allowCredentials) {
-        // todo 这里需要反向检查.
+        validateConfiguration(allowCredentials, allowOrigin, allowMethods, allowHeaders, exposeHeaders);
         this.allowCredentials = allowCredentials;
         return this;
     }
