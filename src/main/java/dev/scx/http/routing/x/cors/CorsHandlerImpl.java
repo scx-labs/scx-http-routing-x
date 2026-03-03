@@ -17,7 +17,7 @@ import static dev.scx.http.headers.HttpHeaderName.*;
 ///
 /// @author scx567888
 /// @version 0.0.1
-public final class CorsHandlerImpl implements CorsHandler {
+final class CorsHandlerImpl implements CorsHandler {
 
     private AllowOrigin allowOrigin;
     private AllowMethods allowMethods;

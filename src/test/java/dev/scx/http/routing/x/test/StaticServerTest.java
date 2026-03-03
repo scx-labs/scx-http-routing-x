@@ -2,7 +2,7 @@ package dev.scx.http.routing.x.test;
 
 import dev.scx.http.routing.Router;
 import dev.scx.http.routing.x.StaticHandler;
-import dev.scx.http.routing.x.cors.CorsHandlerImpl;
+import dev.scx.http.routing.x.cors.CorsHandler;
 import dev.scx.http.x.HttpServer;
 
 import java.io.IOException;
@@ -18,7 +18,7 @@ public class StaticServerTest {
         Router router = Router.of();
 
         // 尽可能靠前
-        router.route(-10000, new CorsHandlerImpl());
+        router.route(-10000, CorsHandler.of());
 
         router.route("/*",
             new StaticHandler(Path.of("C:\\Users\\scx\\Projects\\page3"))

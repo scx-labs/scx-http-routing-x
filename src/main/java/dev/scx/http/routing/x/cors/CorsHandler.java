@@ -9,6 +9,10 @@ import dev.scx.http.routing.x.cors.expose_headers.ExposeHeaders;
 
 public interface CorsHandler extends Function1Void<RoutingContext, Throwable> {
 
+    static CorsHandler of() {
+        return new CorsHandlerImpl();
+    }
+
     CorsHandler allowOrigin(AllowOrigin allowOrigin);
 
     CorsHandler allowMethods(AllowMethods allowMethods);
