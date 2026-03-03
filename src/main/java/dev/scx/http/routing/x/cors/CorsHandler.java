@@ -9,16 +9,16 @@ import dev.scx.http.routing.x.cors.expose_headers.ExposeHeaders;
 
 public interface CorsHandler extends Function1Void<RoutingContext, Throwable> {
 
-    CorsHandler allowMethods(AllowMethods allowMethods);
-
     CorsHandler allowOrigin(AllowOrigin allowOrigin);
+
+    CorsHandler allowMethods(AllowMethods allowMethods);
 
     CorsHandler allowHeaders(AllowHeaders allowHeaders);
 
     CorsHandler exposeHeaders(ExposeHeaders exposeHeaders);
 
-    CorsHandler allowCredentials(boolean allow);
+    CorsHandler allowCredentials(boolean allowCredentials);
 
-    CorsHandler maxAgeSeconds(int maxAgeSeconds);
+    CorsHandler maxAgeSeconds(long maxAgeSeconds);
 
 }
