@@ -30,6 +30,28 @@ public class StaticHandler implements Function1Void<RoutingContext, Throwable> {
         this.root = root;
     }
 
+    /**
+     * 将 TemplatePathMatcher 的 "*" 捕获值（可能为 "", "/", "/a/b", "/a/b/"）
+     * 转换为用于文件系统 resolve 的相对路径（永不以 "/" 开头）。
+     */
+    private static String toRelativeStaticPath(String p) {
+        if (p == null || p.isEmpty() || "/".equals(p)) {
+            return "index.html";
+        }
+
+        // p 形如 "/a/b" 或 "/a/b/"
+        if (p.charAt(0) == '/') {
+            p = p.substring(1); // 关键：去掉 leading slash，避免 resolve 变成绝对路径
+        }
+
+        // 目录请求：".../" -> ".../index.html"
+        if (p.isEmpty() || p.endsWith("/")) {
+            return p + "index.html";
+        }
+
+        return p;
+    }
+
     @Override
     public void apply(RoutingContext routingContext) throws Throwable {
         var request = routingContext.request();
@@ -93,28 +115,6 @@ public class StaticHandler implements Function1Void<RoutingContext, Throwable> {
         }
 
         return resolved;
-    }
-
-    /**
-     * 将 TemplatePathMatcher 的 "*" 捕获值（可能为 "", "/", "/a/b", "/a/b/"）
-     * 转换为用于文件系统 resolve 的相对路径（永不以 "/" 开头）。
-     */
-    private static String toRelativeStaticPath(String p) {
-        if (p == null || p.isEmpty() || "/".equals(p)) {
-            return "index.html";
-        }
-
-        // p 形如 "/a/b" 或 "/a/b/"
-        if (p.charAt(0) == '/') {
-            p = p.substring(1); // 关键：去掉 leading slash，避免 resolve 变成绝对路径
-        }
-
-        // 目录请求：".../" -> ".../index.html"
-        if (p.isEmpty() || p.endsWith("/")) {
-            return p + "index.html";
-        }
-
-        return p;
     }
 
 }

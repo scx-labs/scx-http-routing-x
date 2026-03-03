@@ -1,8 +1,8 @@
 package dev.scx.http.routing.x.test;
 
 import dev.scx.http.routing.Router;
-import dev.scx.http.routing.x.cors.CorsHandlerImpl;
 import dev.scx.http.routing.x.StaticHandler;
+import dev.scx.http.routing.x.cors.CorsHandlerImpl;
 import dev.scx.http.x.HttpServer;
 
 import java.io.IOException;
