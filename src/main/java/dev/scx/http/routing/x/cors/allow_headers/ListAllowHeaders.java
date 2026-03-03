@@ -29,6 +29,11 @@ public final class ListAllowHeaders implements AllowHeaders {
                 throw new IllegalArgumentException("headerName must not be blank");
             }
 
+            if ("*".equals(trimmed)) {
+                throw new IllegalArgumentException(
+                    "'*' is not allowed in ListAllowHeaders, use WildcardAllowHeaders instead");
+            }
+
             if (trimmed.contains(",")) {
                 throw new IllegalArgumentException(
                     "headerName must not contain ',' : " + trimmed);

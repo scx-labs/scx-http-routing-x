@@ -29,6 +29,11 @@ public final class ListAllowMethods implements AllowMethods {
                 throw new IllegalArgumentException("methods must not be blank");
             }
 
+            if ("*".equals(trimmed)) {
+                throw new IllegalArgumentException(
+                    "'*' is not allowed in ListAllowMethods, use WildcardAllowMethods instead");
+            }
+
             if (trimmed.contains(",")) {
                 throw new IllegalArgumentException(
                     "methods must not contain ',' : " + trimmed);
