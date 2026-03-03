@@ -18,12 +18,12 @@ public final class ListAllowMethods implements AllowMethods {
 
         var set = new LinkedHashSet<String>();
 
-        for (var h : methods) {
-            if (h == null) {
+        for (var m : methods) {
+            if (m == null) {
                 throw new NullPointerException("methods must not be null");
             }
 
-            String trimmed = h.value().trim();
+            String trimmed = m.value().trim();
 
             if (trimmed.isEmpty()) {
                 throw new IllegalArgumentException("methods must not be blank");
