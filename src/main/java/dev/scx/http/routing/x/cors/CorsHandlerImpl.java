@@ -6,11 +6,18 @@ import dev.scx.http.headers.ScxHttpHeaderName;
 import dev.scx.http.method.HttpMethod;
 import dev.scx.http.method.ScxHttpMethod;
 import dev.scx.http.routing.RoutingContext;
+import dev.scx.http.routing.x.cors.allow_headers.AllowHeaders;
+import dev.scx.http.routing.x.cors.allow_headers.WildcardAllowHeaders;
+import dev.scx.http.routing.x.cors.allow_methods.AllowMethods;
+import dev.scx.http.routing.x.cors.allow_methods.WildcardAllowMethods;
+import dev.scx.http.routing.x.cors.allow_origin.AllowOrigin;
+import dev.scx.http.routing.x.cors.allow_origin.WildcardAllowOrigin;
+import dev.scx.http.routing.x.cors.expose_headers.ExposeHeaders;
+import dev.scx.http.routing.x.cors.expose_headers.WildcardExposeHeaders;
 
 import java.util.Arrays;
 import java.util.LinkedHashSet;
 import java.util.Objects;
-import java.util.Set;
 
 import static dev.scx.http.headers.HttpHeaderName.*;
 import static java.util.Collections.addAll;
@@ -21,74 +28,55 @@ import static java.util.Collections.addAll;
 /// @version 0.0.1
 public class CorsHandlerImpl implements CorsHandler {
 
-    private final Set<String> allowedMethods = new LinkedHashSet<>();
-    private final Set<String> allowedHeaders = new LinkedHashSet<>();
-    private final Set<String> exposedHeaders = new LinkedHashSet<>();
-    private Set<String> origins;
-    private String allowedMethodsString;
-    private String allowedHeadersString;
-    private String exposedHeadersString;
+    private AllowOrigin allowOrigin;
+    private AllowMethods allowMethods;
+    private AllowHeaders allowHeaders;
+    private ExposeHeaders exposeHeaders;
     private boolean allowCredentials;
-    private String maxAgeSeconds;
+    private long maxAgeSeconds;
 
     public CorsHandlerImpl() {
-        origins = null;
+        this.allowOrigin = new WildcardAllowOrigin();
+        this.allowMethods = AllowMethods.ofWildcard();
+        this.allowHeaders = AllowHeaders.ofWildcard();
+        this.exposeHeaders = ExposeHeaders.ofWildcard();
+        this.allowCredentials = false;
+        this.maxAgeSeconds = 9999;
     }
 
-    private boolean starOrigin() {
-        return origins == null;
-    }
-
-    public CorsHandlerImpl addOrigin(String origin) {
-        Objects.requireNonNull(origin, "'origin' cannot be null");
-        if (origin.equals("*")) {
-            this.origins = null;
-            return this;
-        }
-        if (origins == null) {
-            origins = new LinkedHashSet<>();
-        }
-        origins.add(origin);
+    @Override
+    public CorsHandler allowOrigin(AllowOrigin allowOrigin) {
+        this.allowOrigin = allowOrigin;
         return this;
     }
 
-    public CorsHandlerImpl allowedMethod(String... methods) {
-        addAll(allowedMethods, methods);
-        allowedMethodsString = String.join(",", allowedMethods);
+    @Override
+    public CorsHandler allowMethods(AllowMethods allowMethods) {
+        this.allowMethods = allowMethods;
         return this;
     }
 
-    public CorsHandlerImpl allowedHeader(String... headerNames) {
-        addAll(allowedHeaders, headerNames);
-        allowedHeadersString = String.join(",", allowedHeaders);
+    @Override
+    public CorsHandler allowHeaders(AllowHeaders allowHeaders) {
+        this.allowHeaders = allowHeaders;
         return this;
     }
 
-    public CorsHandlerImpl exposedHeader(String... headerNames) {
-        addAll(exposedHeaders, headerNames);
-        exposedHeadersString = String.join(",", exposedHeaders);
+    @Override
+    public CorsHandler exposeHeaders(ExposeHeaders exposeHeaders) {
+        this.exposeHeaders = exposeHeaders;
         return this;
     }
 
-    public CorsHandlerImpl allowedMethod(ScxHttpMethod... methods) {
-        return allowedMethod(Arrays.stream(methods).map(ScxHttpMethod::value).toArray(String[]::new));
-    }
-
-    public CorsHandlerImpl allowedHeader(ScxHttpHeaderName... headerNames) {
-        return allowedHeader(Arrays.stream(headerNames).map(ScxHttpHeaderName::value).toArray(String[]::new));
-    }
-
-    public CorsHandlerImpl exposedHeader(ScxHttpHeaderName... headerNames) {
-        return allowedHeader(Arrays.stream(headerNames).map(ScxHttpHeaderName::value).toArray(String[]::new));
-    }
-
-    public CorsHandlerImpl allowCredentials(boolean allow) {
-        this.allowCredentials = allow;
+    @Override
+    public CorsHandlerImpl allowCredentials(boolean allowCredentials) {
+        this.allowCredentials = allowCredentials;
         return this;
     }
 
-    public CorsHandlerImpl maxAgeSeconds(int maxAgeSeconds) {
-        this.maxAgeSeconds = maxAgeSeconds == -1 ? null : String.valueOf(maxAgeSeconds);
+    @Override
+    public CorsHandlerImpl maxAgeSeconds(long maxAgeSeconds) {
+        this.maxAgeSeconds = maxAgeSeconds;
         return this;
     }
 
@@ -96,11 +84,18 @@ public class CorsHandlerImpl implements CorsHandler {
     public void apply(RoutingContext context) throws Throwable {
         var request = context.request();
         var response = request.response();
+
         var origin = context.request().getHeader(ORIGIN);
+
+        // 1, 校验是否是 cors 请求.
         if (origin == null) {
             // 不是 CORS 请求 - 什么都不做 直接 next
             context.next();
-        } else if (isValidOrigin(origin)) {
+            return;
+        }
+
+        // todo
+        if (isValidOrigin(origin)) {
             var accessControlRequestMethod = request.getHeader(ACCESS_CONTROL_REQUEST_METHOD);
             if (request.method() == HttpMethod.OPTIONS && accessControlRequestMethod != null) {
                 // 预检 请求
