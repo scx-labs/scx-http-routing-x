@@ -13,13 +13,11 @@ import dev.scx.http.routing.x.cors.expose_headers.WildcardExposeHeaders;
 
 import static dev.scx.http.headers.HttpHeaderName.*;
 
-// todo 配置阶段需要保证不能出现非法组合.
-
-/// CorsHandler
+/// CorsHandlerImpl
 ///
 /// @author scx567888
 /// @version 0.0.1
-public class CorsHandlerImpl implements CorsHandler {
+public final class CorsHandlerImpl implements CorsHandler {
 
     private AllowOrigin allowOrigin;
     private AllowMethods allowMethods;
@@ -60,6 +58,9 @@ public class CorsHandlerImpl implements CorsHandler {
 
     @Override
     public CorsHandler allowOrigin(AllowOrigin allowOrigin) {
+        if (allowOrigin == null) {
+            throw new NullPointerException("allowOrigin must not be null");
+        }
         validateConfiguration(allowCredentials, allowOrigin, allowMethods, allowHeaders, exposeHeaders);
         this.allowOrigin = allowOrigin;
         return this;
@@ -67,6 +68,9 @@ public class CorsHandlerImpl implements CorsHandler {
 
     @Override
     public CorsHandler allowMethods(AllowMethods allowMethods) {
+        if (allowMethods == null) {
+            throw new NullPointerException("allowMethods must not be null");
+        }
         validateConfiguration(allowCredentials, allowOrigin, allowMethods, allowHeaders, exposeHeaders);
         this.allowMethods = allowMethods;
         return this;
@@ -74,6 +78,9 @@ public class CorsHandlerImpl implements CorsHandler {
 
     @Override
     public CorsHandler allowHeaders(AllowHeaders allowHeaders) {
+        if (allowHeaders == null) {
+            throw new NullPointerException("allowHeaders must not be null");
+        }
         validateConfiguration(allowCredentials, allowOrigin, allowMethods, allowHeaders, exposeHeaders);
         this.allowHeaders = allowHeaders;
         return this;
@@ -81,6 +88,9 @@ public class CorsHandlerImpl implements CorsHandler {
 
     @Override
     public CorsHandler exposeHeaders(ExposeHeaders exposeHeaders) {
+        if (exposeHeaders == null) {
+            throw new NullPointerException("exposeHeaders must not be null");
+        }
         validateConfiguration(allowCredentials, allowOrigin, allowMethods, allowHeaders, exposeHeaders);
         this.exposeHeaders = exposeHeaders;
         return this;
@@ -95,6 +105,9 @@ public class CorsHandlerImpl implements CorsHandler {
 
     @Override
     public CorsHandlerImpl maxAgeSeconds(Long maxAgeSeconds) {
+        if (maxAgeSeconds != null && maxAgeSeconds < 0) {
+            throw new IllegalArgumentException("maxAgeSeconds must >= 0");
+        }
         this.maxAgeSeconds = maxAgeSeconds;
         return this;
     }
