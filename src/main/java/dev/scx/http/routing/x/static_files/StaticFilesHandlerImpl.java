@@ -11,6 +11,7 @@ import java.nio.file.attribute.BasicFileAttributes;
 import static dev.scx.http.method.HttpMethod.GET;
 import static dev.scx.http.method.HttpMethod.HEAD;
 import static dev.scx.http.routing.x.static_files.StaticFilesHandlerHelper.restToRelativePath;
+import static dev.scx.http.routing.x.static_files.StaticFilesHandlerHelper.sendFile;
 
 public final class StaticFilesHandlerImpl implements StaticFilesHandler {
 
@@ -57,7 +58,11 @@ public final class StaticFilesHandlerImpl implements StaticFilesHandler {
             return;
         }
 
-        // 6, 待定
+        // 6, 如果是文件
+        if (attr.isRegularFile()) {
+            sendFile(target, context);
+            return;
+        }
 
         // 测试 内容
         response.send("'" + attr + "'");
