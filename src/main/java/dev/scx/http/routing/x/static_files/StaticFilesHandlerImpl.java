@@ -3,7 +3,10 @@ package dev.scx.http.routing.x.static_files;
 import dev.scx.http.exception.NotFoundException;
 import dev.scx.http.routing.RoutingContext;
 
+import java.io.IOException;
+import java.nio.file.Files;
 import java.nio.file.Path;
+import java.nio.file.attribute.BasicFileAttributes;
 
 import static dev.scx.http.method.HttpMethod.GET;
 import static dev.scx.http.method.HttpMethod.HEAD;
@@ -40,12 +43,24 @@ public final class StaticFilesHandlerImpl implements StaticFilesHandler {
 
         // 4, 校验 target 是否越界
         if (!target.startsWith(root)) {
+            // 这里属于恶意输入 我们不 next 而是直接 抛出 404.
             throw new NotFoundException();
         }
 
+        // 5, 读取文件信息
+        BasicFileAttributes attr;
+        try {
+            attr = Files.readAttributes(target, BasicFileAttributes.class);
+        } catch (IOException e) {
+            // 读取失败 文件可能不存在 或者 没权限.
+            context.next();
+            return;
+        }
 
+        // 6, 待定
 
-        response.send("'" + target.toString() + "'");
+        // 测试 内容
+        response.send("'" + attr + "'");
 
     }
 
