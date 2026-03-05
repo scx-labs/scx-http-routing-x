@@ -4,6 +4,7 @@ import dev.scx.exception.ScxWrappedException;
 import dev.scx.http.media_type.FileFormat;
 import dev.scx.http.media_type.ScxMediaType;
 import dev.scx.http.routing.RoutingContext;
+import dev.scx.io.exception.ScxOutputException;
 
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Path;
@@ -48,9 +49,10 @@ final class StaticFilesHandlerHelper {
 
         // 4, 不是 Range 请求, 发送完整文件.
         if (range == null) {
+            // 这里降噪
             try {
                 response.send(target.toFile());
-            }catch (ScxWrappedException e){
+            } catch (ScxWrappedException e) {
 
             }
 
@@ -78,12 +80,17 @@ final class StaticFilesHandlerHelper {
 
         response.setHeader(CONTENT_RANGE, "bytes " + offset + "-" + last + "/" + size);
 
+        // 这里降噪
         try {
             response.send(target.toFile(), offset, length);
-        }catch (ScxWrappedException e){
-
+        } catch (ScxWrappedException e) {
+            // 忽略所有 写出异常.
+            if (e.getCause() instanceof ScxOutputException) {
+                return;
+            }
+            // 其余正常抛出
+            throw e;
         }
-
 
     }
 
@@ -99,10 +106,6 @@ final class StaticFilesHandlerHelper {
             return ScxMediaType.of(mediaType).charset(StandardCharsets.UTF_8);
         }
         return mediaType;
-    }
-
-    record ByteRange(long offset, long length, long last) {
-
     }
 
     public static ByteRange normalizeRange(Long start, Long end, long size) {
@@ -172,6 +175,10 @@ final class StaticFilesHandlerHelper {
         long length = last - offset + 1;
 
         return new ByteRange(offset, length, last);
+    }
+
+    record ByteRange(long offset, long length, long last) {
+
     }
 
 }
