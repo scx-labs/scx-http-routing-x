@@ -9,9 +9,7 @@ import java.nio.file.Path;
 import java.nio.file.attribute.BasicFileAttributes;
 
 import static dev.scx.http.headers.HttpHeaderName.ACCEPT_RANGES;
-import static dev.scx.http.headers.HttpHeaderName.CONTENT_RANGE;
 import static dev.scx.http.media_type.MediaType.*;
-import static dev.scx.http.status_code.HttpStatusCode.PARTIAL_CONTENT;
 
 final class StaticFilesHandlerHelper {
 
@@ -51,19 +49,8 @@ final class StaticFilesHandlerHelper {
         }
 
         // 5, 发送 Range 响应.
-        var start = range.getStart();
-        var end = range.getEnd(attr.size());
-
-        // 计算需要发送的长度
-        var length = end - start + 1;
-
-        // 我们需要构建如下的结构
-        // status: 206 Partial Content
-        response.statusCode(PARTIAL_CONTENT);
-        // Content-Range: bytes 0-1023/146515
-        response.setHeader(CONTENT_RANGE, "bytes " + start + "-" + end + "/" + attr.size());
-        // 发送
-        response.send(target.toFile(), start, length);
+        // 暂时 也完全发送.
+        response.send(target.toFile());
 
     }
 

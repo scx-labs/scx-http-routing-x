@@ -60,7 +60,7 @@ public final class StaticFilesHandlerImpl implements StaticFilesHandler {
 
         // 6, 如果是文件
         if (attr.isRegularFile()) {
-            sendFile(target, context);
+            sendFile(target, attr, context);
             return;
         }
 
