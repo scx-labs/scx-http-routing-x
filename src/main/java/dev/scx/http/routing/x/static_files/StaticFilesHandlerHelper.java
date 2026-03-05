@@ -32,7 +32,7 @@ final class StaticFilesHandlerHelper {
         return Path.of(rest.substring(i));
     }
 
-
+    // todo 降噪 逻辑待优化
     public static void sendFile(Path target, BasicFileAttributes attr, RoutingContext context) {
         var request = context.request();
         var response = request.response();
