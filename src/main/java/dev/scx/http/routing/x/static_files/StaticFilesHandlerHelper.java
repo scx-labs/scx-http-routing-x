@@ -16,7 +16,7 @@ import static dev.scx.http.media_type.MediaType.*;
 import static dev.scx.http.status_code.HttpStatusCode.PARTIAL_CONTENT;
 import static dev.scx.http.status_code.HttpStatusCode.RANGE_NOT_SATISFIABLE;
 
-final class StaticFilesHandlerHelper {
+public final class StaticFilesHandlerHelper {
 
     /// 将捕获转换为 相对路径
     public static Path restToRelativePath(String rest) {
@@ -39,10 +39,6 @@ final class StaticFilesHandlerHelper {
 
         // 1, 让客户端知道我们支持分段加载
         response.setHeader(ACCEPT_RANGES, "bytes");
-
-        // 2, 设置 contentType
-        var mediaType = getMediaType(target);
-        response.contentType(mediaType);
 
         // 3, 判断是不是 Range 请求
         var range = request.headers().range();
@@ -92,20 +88,6 @@ final class StaticFilesHandlerHelper {
             throw e;
         }
 
-    }
-
-    public static ScxMediaType getMediaType(Path path) {
-        var fileFormat = FileFormat.findByFileName(path.getFileName().toString());
-        if (fileFormat == null) {
-            fileFormat = FileFormat.BIN;
-        }
-        var mediaType = fileFormat.mediaType();
-
-        // 针对 常见文本文件 我们设置一下 格式
-        if (mediaType == TEXT_PLAIN || mediaType == TEXT_HTML || mediaType == APPLICATION_XML || mediaType == APPLICATION_JSON) {
-            return ScxMediaType.of(mediaType).charset(StandardCharsets.UTF_8);
-        }
-        return mediaType;
     }
 
     public static ByteRange normalizeRange(Long start, Long end, long size) {

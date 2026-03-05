@@ -13,7 +13,6 @@ import java.nio.file.Path;
 
 import static dev.scx.http.headers.HttpHeaderName.ACCEPT_RANGES;
 import static dev.scx.http.headers.HttpHeaderName.CONTENT_RANGE;
-import static dev.scx.http.media_type.MediaType.*;
 import static dev.scx.http.status_code.HttpStatusCode.PARTIAL_CONTENT;
 
 /// StaticHelper
@@ -45,12 +44,6 @@ public class StaticHelper {
         //2, 尝试解析 Range
         var rangeStr = request.getHeader("Range");
 
-        //3, 设置 contentType (只有在未设置的时候才设置)
-        if (response.contentType() == null) {
-            var contentType = getMediaTypeByFile(path);
-            response.contentType(contentType);
-        }
-
         //3, 如果为空 则发送全量数据
         if (rangeStr == null) {
             response.send(path.toFile());
@@ -80,17 +73,6 @@ public class StaticHelper {
 
     }
 
-    public static ScxMediaType getMediaTypeByFile(Path path) {
-        var fileFormat = FileFormat.findByFileName(path.getFileName().toString());
-        if (fileFormat == null) {
-            fileFormat = FileFormat.BIN;
-        }
-        var mediaType = fileFormat.mediaType();
-        var contentType = ScxMediaType.of(mediaType);
-        if (mediaType == TEXT_PLAIN || mediaType == TEXT_HTML || mediaType == APPLICATION_XML || mediaType == APPLICATION_JSON) {
-            contentType.charset(StandardCharsets.UTF_8);
-        }
-        return contentType;
-    }
+
 
 }
