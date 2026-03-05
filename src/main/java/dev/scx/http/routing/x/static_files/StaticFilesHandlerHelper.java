@@ -1,5 +1,6 @@
 package dev.scx.http.routing.x.static_files;
 
+import dev.scx.exception.ScxWrappedException;
 import dev.scx.http.media_type.FileFormat;
 import dev.scx.http.media_type.ScxMediaType;
 import dev.scx.http.routing.RoutingContext;
@@ -47,7 +48,12 @@ final class StaticFilesHandlerHelper {
 
         // 4, 不是 Range 请求, 发送完整文件.
         if (range == null) {
-            response.send(target.toFile());
+            try {
+                response.send(target.toFile());
+            }catch (ScxWrappedException e){
+
+            }
+
             return;
         }
 
@@ -72,7 +78,12 @@ final class StaticFilesHandlerHelper {
 
         response.setHeader(CONTENT_RANGE, "bytes " + offset + "-" + last + "/" + size);
 
-        response.send(target.toFile(), offset, length);
+        try {
+            response.send(target.toFile(), offset, length);
+        }catch (ScxWrappedException e){
+
+        }
+
 
     }
 
