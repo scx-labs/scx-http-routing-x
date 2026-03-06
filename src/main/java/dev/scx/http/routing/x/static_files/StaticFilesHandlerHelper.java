@@ -29,7 +29,6 @@ public final class StaticFilesHandlerHelper {
         return Path.of(rest.substring(i));
     }
 
-    // todo 降噪 逻辑待优化
     public static void sendFile(Path target, BasicFileAttributes attr, RoutingContext context) {
         var request = context.request();
         var response = request.response();
@@ -39,6 +38,7 @@ public final class StaticFilesHandlerHelper {
 
         // 2, 判断是不是 Range 请求
         var rangeStr = request.getHeader(RANGE);
+        // todo 这里解析错误待处理 返回 416 ?
         var range = rangeStr != null ? Range.parse(rangeStr) : null;
 
         // 3, 不是 Range 请求, 发送完整文件.
@@ -60,30 +60,26 @@ public final class StaticFilesHandlerHelper {
         }
 
         // 4, 发送 Range 响应.
-
         var size = attr.size();
 
-        var byteRange = normalizeRange(range.start(), range.end(), size);
+        var contentRange = resolve(range, size);
 
-        if (byteRange == null) {
+        if (contentRange.isUnsatisfied()) {
             response.statusCode(RANGE_NOT_SATISFIABLE);
-            response.setHeader("Content-Range", "bytes */" + size);
+            response.setHeader(CONTENT_RANGE, contentRange.encode());
             response.send();
             return;
         }
 
-        long start = byteRange.offset();
-        long length = byteRange.length();
-        long end = byteRange.last();
-
         // 设置 206
         response.statusCode(PARTIAL_CONTENT);
-
-        response.setHeader(CONTENT_RANGE, "bytes " + start + "-" + end + "/" + size);
+        response.setHeader(CONTENT_RANGE, contentRange.encode());
 
         // 这里降噪
         try {
-            response.send(target.toFile(), start, length);
+            long offset = contentRange.start();
+            long length = contentRange.end() - contentRange.start() + 1;
+            response.send(target.toFile(), offset, length);
         } catch (ScxWrappedException e) {
             // 忽略所有 写出异常.
             if (e.getCause() instanceof ScxOutputException) {
@@ -95,88 +91,28 @@ public final class StaticFilesHandlerHelper {
 
     }
 
-    public static ByteRange normalizeRange(Long start, Long end, long size) {
-
-        // 空文件无法满足任何 range
-        if (size <= 0) {
-            return null;
-        }
-
-        long offset;
-        long last;
-
-        if (start != null && end != null) {
-            // bytes=start-end
-
-            if (start < 0) {
-                return null;
-            }
-
-            if (start >= size) {
-                return null;
-            }
-
-            offset = start;
-
-            last = Math.min(end, size - 1);
-
-            if (last < offset) {
-                return null;
-            }
-
-        } else if (start != null) {
-            // bytes=start-
-
-            if (start < 0) {
-                return null;
-            }
-
-            if (start >= size) {
-                return null;
-            }
-
-            offset = start;
-            last = size - 1;
-
-        } else if (end != null) {
-            // bytes=-suffix
-
-            long suffix = end;
-
-            if (suffix <= 0) {
-                return null;
-            }
-
-            if (suffix >= size) {
-                offset = 0;
-            } else {
-                offset = size - suffix;
-            }
-
-            last = size - 1;
-
-        } else {
-            return null;
-        }
-
-        long length = last - offset + 1;
-
-        return new ByteRange(offset, length, last);
-    }
-
     public static ContentRange resolve(Range range, long size) {
+
+        if (size == 0) {
+            return ContentRange.ofUnsatisfied(size);
+        }
+
         var start = range.start();
         var end = range.end();
+
         if (start != null && end != null) {
+
             if (start >= size) {
                 return ContentRange.ofUnsatisfied(size);
             }
 
             long realEnd = Math.min(end, size - 1);
+
             return ContentRange.of(start, realEnd, size);
         }
 
         if (start != null) {
+
             if (start >= size) {
                 return ContentRange.ofUnsatisfied(size);
             }
@@ -195,10 +131,6 @@ public final class StaticFilesHandlerHelper {
         end = size - 1;
 
         return ContentRange.of(start, end, size);
-    }
-
-    record ByteRange(long offset, long length, long last) {
-
     }
 
 }
