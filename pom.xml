@@ -98,7 +98,7 @@
         <scx-http-routing.version>0.1.1</scx-http-routing.version>
         <!-- todo 测试完成后移除 -->
         <scx-http-x.version>0.3.3</scx-http-x.version>
-        <testng.version>7.11.0</testng.version>
+        <testng.version>7.12.0</testng.version>
 
     </properties>
 
