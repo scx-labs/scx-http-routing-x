@@ -15,7 +15,7 @@ import java.time.format.DateTimeFormatter;
 import static dev.scx.http.headers.HttpHeaderName.*;
 import static dev.scx.http.method.HttpMethod.GET;
 import static dev.scx.http.method.HttpMethod.HEAD;
-import static dev.scx.http.routing.x.StaticHelper.sendStatic;
+//import static dev.scx.http.routing.x.StaticHelper.sendStatic;
 
 
 /// StaticHandler
@@ -88,7 +88,7 @@ public class StaticHandler implements Function1Void<RoutingContext, Throwable> {
             routingContext.request().response().setHeader(ETAG, etag);
             routingContext.request().response().setHeader(LAST_MODIFIED, lastModifiedTime);
 
-            sendStatic(filePath, routingContext);
+//            sendStatic(filePath, routingContext);
         } catch (IOException e) {
             routingContext.next();
         }

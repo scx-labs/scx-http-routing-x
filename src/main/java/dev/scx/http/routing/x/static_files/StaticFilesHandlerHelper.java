@@ -1,18 +1,14 @@
 package dev.scx.http.routing.x.static_files;
 
 import dev.scx.exception.ScxWrappedException;
-import dev.scx.http.media_type.FileFormat;
-import dev.scx.http.media_type.ScxMediaType;
 import dev.scx.http.routing.RoutingContext;
+import dev.scx.http.routing.x.static_files.range.Range;
 import dev.scx.io.exception.ScxOutputException;
 
-import java.nio.charset.StandardCharsets;
 import java.nio.file.Path;
 import java.nio.file.attribute.BasicFileAttributes;
 
-import static dev.scx.http.headers.HttpHeaderName.ACCEPT_RANGES;
-import static dev.scx.http.headers.HttpHeaderName.CONTENT_RANGE;
-import static dev.scx.http.media_type.MediaType.*;
+import static dev.scx.http.headers.HttpHeaderName.*;
 import static dev.scx.http.status_code.HttpStatusCode.PARTIAL_CONTENT;
 import static dev.scx.http.status_code.HttpStatusCode.RANGE_NOT_SATISFIABLE;
 
@@ -40,22 +36,29 @@ public final class StaticFilesHandlerHelper {
         // 1, 让客户端知道我们支持分段加载
         response.setHeader(ACCEPT_RANGES, "bytes");
 
-        // 3, 判断是不是 Range 请求
-        var range = request.headers().range();
+        // 2, 判断是不是 Range 请求
+        var rangeStr = request.getHeader(RANGE);
+        var range = rangeStr != null ? Range.parse(rangeStr) : null;
 
-        // 4, 不是 Range 请求, 发送完整文件.
+        // 3, 不是 Range 请求, 发送完整文件.
         if (range == null) {
-            // 这里降噪
+            // 这里由于浏览器经常会中断连接
+            // 为了防止频繁的 异常信息, 这里降噪处理.
+            // 后边的 Range 同理.
             try {
                 response.send(target.toFile());
             } catch (ScxWrappedException e) {
-
+                // 忽略所有 写出异常.
+                if (e.getCause() instanceof ScxOutputException) {
+                    return;
+                }
+                // 其余正常抛出
+                throw e;
             }
-
             return;
         }
 
-        // 5, 发送 Range 响应.
+        // 4, 发送 Range 响应.
 
         var size = attr.size();
 
@@ -68,17 +71,18 @@ public final class StaticFilesHandlerHelper {
             return;
         }
 
-        long offset = byteRange.offset();
+        long start = byteRange.offset();
         long length = byteRange.length();
-        long last = byteRange.last();
+        long end = byteRange.last();
 
+        // 设置 206
         response.statusCode(PARTIAL_CONTENT);
 
-        response.setHeader(CONTENT_RANGE, "bytes " + offset + "-" + last + "/" + size);
+        response.setHeader(CONTENT_RANGE, "bytes " + start + "-" + end + "/" + size);
 
         // 这里降噪
         try {
-            response.send(target.toFile(), offset, length);
+            response.send(target.toFile(), start, length);
         } catch (ScxWrappedException e) {
             // 忽略所有 写出异常.
             if (e.getCause() instanceof ScxOutputException) {
