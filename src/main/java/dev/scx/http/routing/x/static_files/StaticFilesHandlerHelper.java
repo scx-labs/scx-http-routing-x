@@ -2,6 +2,7 @@ package dev.scx.http.routing.x.static_files;
 
 import dev.scx.exception.ScxWrappedException;
 import dev.scx.http.routing.RoutingContext;
+import dev.scx.http.routing.x.static_files.content_range.ContentRange;
 import dev.scx.http.routing.x.static_files.range.Range;
 import dev.scx.io.exception.ScxOutputException;
 
@@ -161,6 +162,39 @@ public final class StaticFilesHandlerHelper {
         long length = last - offset + 1;
 
         return new ByteRange(offset, length, last);
+    }
+
+    public static ContentRange resolve(Range range, long size) {
+        var start = range.start();
+        var end = range.end();
+        if (start != null && end != null) {
+            if (start >= size) {
+                return ContentRange.ofUnsatisfied(size);
+            }
+
+            long realEnd = Math.min(end, size - 1);
+            return ContentRange.of(start, realEnd, size);
+        }
+
+        if (start != null) {
+            if (start >= size) {
+                return ContentRange.ofUnsatisfied(size);
+            }
+
+            return ContentRange.of(start, size - 1, size);
+        }
+
+        // suffix
+        long suffix = end;
+
+        if (suffix == 0) {
+            return ContentRange.ofUnsatisfied(size);
+        }
+
+        start = Math.max(size - suffix, 0);
+        end = size - 1;
+
+        return ContentRange.of(start, end, size);
     }
 
     record ByteRange(long offset, long length, long last) {
