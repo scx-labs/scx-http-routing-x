@@ -15,14 +15,6 @@ import static dev.scx.http.routing.x.static_files.content_range.ContentRangeHelp
 /// @version 0.0.1
 public record ContentRange(Long start, Long end, Long size) {
 
-    public static ContentRange of(long start, long end, long size) {
-        return new ContentRange(start, end, size);
-    }
-
-    public static ContentRange ofUnsatisfied(long size) {
-        return new ContentRange(null, null, size);
-    }
-
     public ContentRange {
         if (size == null || size < 0) {
             throw new IllegalArgumentException("size must be >= 0");
@@ -51,6 +43,14 @@ public record ContentRange(Long start, Long end, Long size) {
                 throw new IllegalArgumentException("end must be < size");
             }
         }
+    }
+
+    public static ContentRange of(long start, long end, long size) {
+        return new ContentRange(start, end, size);
+    }
+
+    public static ContentRange ofUnsatisfied(long size) {
+        return new ContentRange(null, null, size);
     }
 
     public static ContentRange parse(String contentRangeStr) throws IllegalContentRangeException {

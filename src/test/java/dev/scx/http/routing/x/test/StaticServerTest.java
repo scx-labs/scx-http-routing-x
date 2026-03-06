@@ -1,7 +1,6 @@
 package dev.scx.http.routing.x.test;
 
 import dev.scx.http.routing.Router;
-import dev.scx.http.routing.x.StaticHandler;
 import dev.scx.http.routing.x.cors.CorsHandler;
 import dev.scx.http.routing.x.static_files.StaticFilesHandler;
 import dev.scx.http.x.HttpServer;
